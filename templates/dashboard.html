@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 Security Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #222;
+            color: #eee;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff4d4d;
+            border-bottom: 2px solid #ff4d4d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        #image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .log-entry {
+            background-color: #333;
+            border: 3px solid #ff4d4d;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            max-width: 350px;
+        }
+        .log-entry img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .timestamp {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+        .loading {
+            color: #00ffaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Security System Log</h1>
+    <div id="image-container" class="loading">Loading unauthorized captures...</div>
+
+    <script>
+        const container = document.getElementById('image-container');
+        
+        // Function to format the filename timestamp (e.g., UNAUTHORIZED_20251112-151549.jpg)
+        function formatTimestamp(filename) {
+            const match = filename.match(/UNAUTHORIZED_(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.jpg/);
+            if (match) {
+                const [, year, month, day, hour, minute, second] = match;
+                return `${day}/${month}/${year} at ${hour}:${minute}:${second}`;
+            }
+            return 'Timestamp Unknown';
+        }
+
+        // Function to fetch the list of images from the Flask server
+        async function fetchImages() {
+            try {
+                const response = await fetch('/get_images');
+                const data = await response.json();
+                
+                container.innerHTML = ''; // Clear loading message
+
+                if (data.images && data.images.length > 0) {
+                    data.images.forEach(filename => {
+                        const div = document.createElement('div');
+                        div.className = 'log-entry';
+
+                        // The URL to the image is just the filename, 
+                        // because Flask serves the alarm_logs folder as the static root.
+                        const imageUrl = '/alarm_logs/' + filename; 
+
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.alt = 'Unauthorized Capture';
+                        
+                        const p = document.createElement('p');
+                        p.className = 'timestamp';
+                        p.textContent = formatTimestamp(filename);
+
+                        div.appendChild(img);
+                        div.appendChild(p);
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.textContent = 'No unauthorized captures yet.';
+                    container.className = '';
+                }
+
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                container.textContent = 'ERROR: Could not connect to image server.';
+                container.className = '';
+            }
+        }
+
+        // Load images when the page opens
+        fetchImages();
+    </script>
+</body>
+</html>

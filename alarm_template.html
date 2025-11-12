@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>!!! SECURITY ALERT !!!</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #fdd; }
+        h1 { color: #cc0000; margin-top: 50px; }
+        p { font-size: 1.2em; color: #333; }
+        img { max-width: 90%; height: auto; border: 5px solid #cc0000; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>!!! UNAUTHORIZED PERSON DETECTED !!!</h1>
+    <p>Captured on: <span id="timestamp"></span></p>
+    
+    <img id="evidenceImage" src="" alt="Captured Unauthorised Person">
+
+    <script>
+        // Placeholder for dynamic image path, which is replaced by the Python script
+        const imagePath = "_IMAGE_PATH_PLACEHOLDER_";
+        
+        // Display the image and timestamp
+        document.getElementById('evidenceImage').src = imagePath;
+        document.getElementById('timestamp').innerText = new Date().toLocaleString();
+
+        // Display the alert message when the browser loads
+        alert("SECURITY ALERT: Unauthorized person detected! Check the browser window for the evidence image.");
+    </script>
+</body>
+</html>
