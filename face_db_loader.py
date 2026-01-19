@@ -1,63 +1,63 @@
-import face_recognition
 import os
-from typing import List, Any, Tuple
+import numpy as np
+import cv2
+import face_recognition
+from pathlib import Path
 
-# Path to the parent folder containing the person-specific subfolders
 FACES_DIR = "known_faces"
+CACHE_DIR = "face_cache"
 
-def load_known_faces() -> Tuple[List[Any], List[str]]:
-    """
-    Loads images from nested subfolders using os.walk.
-    The subfolder's name is used as the person's name (label).
-    """
-    known_face_encodings = []
-    known_face_names = []
-    
-    print("\n--- 🧑‍💻 Loading Authorized Faces (Recursive Scan) ---")
-    
-    # Ensure the directory exists
-    if not os.path.isdir(FACES_DIR):
-        print(f"Error: Directory '{FACES_DIR}' not found. Create it and add faces.")
-        return known_face_encodings, known_face_names
+if not os.path.exists(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
 
-    # Use os.walk to traverse all directories and subdirectories
-    for root, dirs, files in os.walk(FACES_DIR):
-        
-        # Check if we are inside a person's subfolder (not the top 'known_faces' folder)
-        if root != FACES_DIR:
-            # The person's name is the name of the subfolder
-            person_name = os.path.basename(root).capitalize() 
+def encode_face(image_path):
+    """Load + encode one face from file"""
+    img = cv2.imread(image_path)
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    locs = face_recognition.face_locations(rgb, model="hog")
 
-            for filename in files:
-                # Check for common image file extensions
-                if filename.lower().endswith(('.jpg', '.png', '.jpeg')):
-                    
-                    # 1. Construct the full path to the image
-                    path = os.path.join(root, filename)
-                    
-                    try:
-                        # 2. Load the image
-                        image = face_recognition.load_image_file(path)
-                        
-                        # 3. Find face locations and encode the first face found
-                        face_locations = face_recognition.face_locations(image)
-                        
-                        if face_locations:
-                            # Get the 128-dimensional face encoding
-                            encoding = face_recognition.face_encodings(image, face_locations)[0]
-                            known_face_encodings.append(encoding)
-                            known_face_names.append(person_name)
-                            print(f"  ✅ Encoded: {person_name} from {path}")
-                        else:
-                            # This warning is crucial for debugging image quality
-                            print(f"  ❌ Warning: No face found in {path}. Skipping image.")
-                    
-                    except Exception as e:
-                        # Catch file reading or encoding errors without crashing
-                        print(f"  ⚠ Error loading image {path}: {e}")
+    if not locs:
+        return None
 
-    return known_face_encodings, known_face_names
+    return face_recognition.face_encodings(rgb, locs)[0]
 
-if __name__ == '_main_':
-    encodings, names = load_known_faces()
-    print(f"\nDatabase Load Complete. Found {len(encodings)} total encodings for {len(set(names))} unique people.")
+def load_known_faces():
+    encodings = []
+    names = []
+
+    # --- 1. LOAD FROM CACHE (FAST) ---
+    cache_files = list(Path(CACHE_DIR).glob("*.npy"))
+    if cache_files:
+        for f in cache_files:
+            obj = np.load(f, allow_pickle=True).item()
+            encodings.append(obj["encoding"])
+            names.append(obj["name"])
+        print(f"[FAST] Loaded {len(names)} encodings from cache.")
+        return encodings, names
+
+    # --- 2. FIRST RUN: BUILD CACHE ---
+    print("[INIT] First run — Building face cache...")
+
+    for person in os.listdir(FACES_DIR):
+        person_folder = os.path.join(FACES_DIR, person)
+
+        if not os.path.isdir(person_folder):
+            continue
+
+        for file in os.listdir(person_folder):
+            if file.lower().endswith(("jpg","jpeg","png")):
+                path = os.path.join(person_folder, file)
+                enc = encode_face(path)
+
+                if enc is not None:
+                    encodings.append(enc)
+                    names.append(person)
+
+                    # save cache file
+                    cache_path = os.path.join(CACHE_DIR, f"{person}_{file}.npy")
+                    np.save(cache_path, {"name": person, "encoding": enc})
+
+                    print("[CACHED]", person, file)
+
+    print("Cache ready! Encoded:", len(names))
+    return encodings, names
