@@ -11,8 +11,11 @@ Traditional surveillance systems either rely solely on sensors (high false posit
 This system follows an event-driven hybrid architecture:
 
 A PIR motion sensor detects movement
+
 Triggers a YOLOv8-based AI model for verification
+
 Confirms human presence using object detection & face recognition
+
 Activates alerts only when a real threat is verified
 
 ✅ Reduced false alarms
