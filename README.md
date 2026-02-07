@@ -63,3 +63,26 @@ Alarm/dashboard alert is activated if intrusion is confirmed
 💰 Cost-effective compared to always-on AI systems
 🔐 Reliable for security-critical environments
 
+Setup
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+pip install -r requirements.txt
+
+▶️ Running the Project
+
+This system runs using two parallel processes.
+
+🖥️ Terminal 1 – Start the Web Server
+python web_server.py
+
+
+Launches the dashboard / alert server to receive real-time security events.
+
+🔐 Terminal 2 – Start the Security Module
+python security.py
+
+
+Activates PIR-triggered monitoring, YOLOv8 detection, and intrusion verification.
+
+⚠️ Important:
+Ensure the web server is running before starting the security module to avoid connection issues.
