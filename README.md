@@ -36,6 +36,7 @@ Hardware
 -PIR Motion Sensor
 -USB Webcam
 -Buzzer & LED
+
 Software
 -Python 3
 -YOLOv8 (Ultralytics)
@@ -45,10 +46,15 @@ Software
 
 ⚙️ How It Works
 PIR sensor detects motion
+
 Arduino sends trigger signal to host system
+
 Python application captures video frame
+
 YOLOv8 verifies human presence
+
 Face recognition confirms identity
+
 Alarm/dashboard alert is activated if intrusion is confirmed
 
 📊 Results & Impact
