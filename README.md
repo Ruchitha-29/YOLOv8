@@ -65,7 +65,9 @@ Alarm/dashboard alert is activated if intrusion is confirmed
 
 Setup
 git clone https://github.com/your-username/your-repo-name.git
+
 cd your-repo-name
+
 pip install -r requirements.txt
 
 ▶️ Running the Project
